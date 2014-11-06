@@ -1017,24 +1017,32 @@ shouldStartLoadWithRequest:(NSURLRequest *)request
     [self.webView stringByEvaluatingJavaScriptFromString:trigger];
     
     [self workaroundiOS7FocusIssueAfterHidingBehindAnotherVC];
+    
+    [self callDelegateEditorTextDidChange];
 }
 
 - (void)insertImage:(NSString *)url alt:(NSString *)alt
 {
     NSString *trigger = [NSString stringWithFormat:@"ZSSEditor.insertImage(\"%@\", \"%@\");", url, alt];
     [self.webView stringByEvaluatingJavaScriptFromString:trigger];
+    
+    [self callDelegateEditorTextDidChange];
 }
 
 - (void)replaceLocalImageWithRemoteImage:(NSString*)url uniqueId:(NSString*)uniqueId
 {
     NSString *trigger = [NSString stringWithFormat:@"ZSSEditor.replaceLocalImageWithRemoteImage(\"%@\", \"%@\");", uniqueId, url];
     [self.webView stringByEvaluatingJavaScriptFromString:trigger];
+    
+    [self callDelegateEditorTextDidChange];
 }
 
 - (void)updateImage:(NSString *)url alt:(NSString *)alt
 {
     NSString *trigger = [NSString stringWithFormat:@"ZSSEditor.updateImage(\"%@\", \"%@\");", url, alt];
     [self.webView stringByEvaluatingJavaScriptFromString:trigger];
+    
+    [self callDelegateEditorTextDidChange];
 }
 
 #pragma mark - Links
