@@ -72,21 +72,21 @@ ZSSEditor.init = function() {
         ZSSEditor.callback("callback-new-field", "id=" + editableFieldId);
     });
     
-	document.addEventListener("selectionchange", function(e) {
-		ZSSEditor.currentEditingLink = null;
-		// DRM: only do something here if the editor has focus.  The reason is that when the
-		// selection changes due to the editor loosing focus, the focusout event will not be
-		// sent if we try to load a callback here.
-		//
-		if (editor.is(":focus")) {
+    document.addEventListener("selectionchange", function(e) {
+        ZSSEditor.currentEditingLink = null;
+        // DRM: only do something here if the editor has focus.  The reason is that when the
+        // selection changes due to the editor loosing focus, the focusout event will not be
+        // sent if we try to load a callback here.
+        //
+        if (editor.is(":focus")) {
             ZSSEditor.selectionChangedCallback();
             ZSSEditor.sendEnabledStyles(e);
-			var clicked = $(e.target);
-			if (!clicked.hasClass('zs_active')) {
-				$('img').removeClass('zs_active');
-			}
-		}
-	}, false);
+            var clicked = $(e.target);
+            if (!clicked.hasClass('zs_active')) {
+                $('img').removeClass('zs_active');
+            }
+        }
+    }, false);
 
 }; //end
 
@@ -131,9 +131,10 @@ ZSSEditor.formatNewLine = function(e) {
         
         if (parentBlockQuoteNode) {
             this.formatNewLineInsideBlockquote(e);
+            document.execCommand('formatBlock', false, 'p');
         } else if (!ZSSEditor.isCommandEnabled('insertOrderedList')
                    && !ZSSEditor.isCommandEnabled('insertUnorderedList')) {
-            document.execCommand('formatBlock', false, 'div');
+            document.execCommand('formatBlock', false, 'p');
         }
     } else {
         e.preventDefault();
@@ -169,14 +170,14 @@ ZSSEditor.getFocusedField = function() {
 // MARK: - Logging
 
 ZSSEditor.log = function(msg) {
-	ZSSEditor.callback('callback-log', 'msg=' + msg);
+    ZSSEditor.callback('callback-log', 'msg=' + msg);
 };
 
 // MARK: - Callbacks
 
 ZSSEditor.domLoadedCallback = function() {
-	
-	ZSSEditor.callback("callback-dom-loaded");
+    
+    ZSSEditor.callback("callback-dom-loaded");
 };
 
 ZSSEditor.selectionChangedCallback = function () {
@@ -189,17 +190,17 @@ ZSSEditor.selectionChangedCallback = function () {
 
 ZSSEditor.callback = function(callbackScheme, callbackPath) {
     
-	var url =  callbackScheme + ":";
+    var url =  callbackScheme + ":";
  
-	if (callbackPath) {
-		url = url + callbackPath;
-	}
-	
-	if (isUsingiOS) {
+    if (callbackPath) {
+        url = url + callbackPath;
+    }
+    
+    if (isUsingiOS) {
         ZSSEditor.callbackThroughIFrame(url);
-	} else {
-		console.log(url);
-	}
+    } else {
+        console.log(url);
+    }
 };
 
 /**
@@ -229,19 +230,19 @@ ZSSEditor.callbackThroughIFrame = function(url) {
 
 ZSSEditor.stylesCallback = function(stylesArray) {
 
-	var stylesString = '';
-	
-	if (stylesArray.length > 0) {
-		stylesString = stylesArray.join(defaultCallbackSeparator);
-	}
+    var stylesString = '';
+    
+    if (stylesArray.length > 0) {
+        stylesString = stylesArray.join(defaultCallbackSeparator);
+    }
 
-	ZSSEditor.callback("callback-selection-style", stylesString);
+    ZSSEditor.callback("callback-selection-style", stylesString);
 };
 
 // MARK: - Selection
 
 ZSSEditor.backupRange = function(){
-	var selection = window.getSelection();
+    var selection = window.getSelection();
     var range = selection.getRangeAt(0);
     
     ZSSEditor.currentSelection =
@@ -266,9 +267,9 @@ ZSSEditor.restoreRange = function(){
 };
 
 ZSSEditor.getSelectedText = function() {
-	var selection = window.getSelection();
-	
-	return selection.toString();
+    var selection = window.getSelection();
+    
+    return selection.toString();
 };
 
 ZSSEditor.getCaretArguments = function() {
@@ -385,85 +386,85 @@ ZSSEditor.defaultParagraphSeparatorTag = function() {
 // MARK: - Styles
 
 ZSSEditor.setBold = function() {
-	document.execCommand('bold', false, null);
-	ZSSEditor.sendEnabledStyles();
+    document.execCommand('bold', false, null);
+    ZSSEditor.sendEnabledStyles();
 };
 
 ZSSEditor.setItalic = function() {
-	document.execCommand('italic', false, null);
-	ZSSEditor.sendEnabledStyles();
+    document.execCommand('italic', false, null);
+    ZSSEditor.sendEnabledStyles();
 };
 
 ZSSEditor.setSubscript = function() {
-	document.execCommand('subscript', false, null);
-	ZSSEditor.sendEnabledStyles();
+    document.execCommand('subscript', false, null);
+    ZSSEditor.sendEnabledStyles();
 };
 
 ZSSEditor.setSuperscript = function() {
-	document.execCommand('superscript', false, null);
-	ZSSEditor.sendEnabledStyles();
+    document.execCommand('superscript', false, null);
+    ZSSEditor.sendEnabledStyles();
 };
 
 ZSSEditor.setStrikeThrough = function() {
-	var commandName = 'strikeThrough';
-	var isDisablingStrikeThrough = ZSSEditor.isCommandEnabled(commandName);
-	
-	document.execCommand(commandName, false, null);
-	
-	// DRM: WebKit has a problem disabling strikeThrough when the tag <del> is used instead of
-	// <strike>.  The code below serves as a way to fix this issue.
-	//
-	var mustHandleWebKitIssue = (isDisablingStrikeThrough
-								 && ZSSEditor.isCommandEnabled(commandName));
-	
-	if (mustHandleWebKitIssue) {
-		var troublesomeNodeNames = ['del'];
-		
-		var selection = window.getSelection();
-		var range = selection.getRangeAt(0).cloneRange();
-		
-		var container = range.commonAncestorContainer;
-		var nodeFound = false;
-		var textNode = null;
-		
-		while (container && !nodeFound) {
-			nodeFound = (container
-						 && container.nodeType == document.ELEMENT_NODE
-						 && troublesomeNodeNames.indexOf(container.nodeName.toLowerCase()) > -1);
-			
-			if (!nodeFound) {
-				container = container.parentElement;
-			}
-		}
-		
-		if (container) {
-			var newObject = $(container).replaceWith(container.innerHTML);
-			
-			var finalSelection = window.getSelection();
-			var finalRange = selection.getRangeAt(0).cloneRange();
-			
-			finalRange.setEnd(finalRange.startContainer, finalRange.startOffset + 1);
-			
-			selection.removeAllRanges();
-			selection.addRange(finalRange);
-		}
-	}
-	
-	ZSSEditor.sendEnabledStyles();
+    var commandName = 'strikeThrough';
+    var isDisablingStrikeThrough = ZSSEditor.isCommandEnabled(commandName);
+    
+    document.execCommand(commandName, false, null);
+    
+    // DRM: WebKit has a problem disabling strikeThrough when the tag <del> is used instead of
+    // <strike>.  The code below serves as a way to fix this issue.
+    //
+    var mustHandleWebKitIssue = (isDisablingStrikeThrough
+                                 && ZSSEditor.isCommandEnabled(commandName));
+    
+    if (mustHandleWebKitIssue) {
+        var troublesomeNodeNames = ['del'];
+        
+        var selection = window.getSelection();
+        var range = selection.getRangeAt(0).cloneRange();
+        
+        var container = range.commonAncestorContainer;
+        var nodeFound = false;
+        var textNode = null;
+        
+        while (container && !nodeFound) {
+            nodeFound = (container
+                         && container.nodeType == document.ELEMENT_NODE
+                         && troublesomeNodeNames.indexOf(container.nodeName.toLowerCase()) > -1);
+            
+            if (!nodeFound) {
+                container = container.parentElement;
+            }
+        }
+        
+        if (container) {
+            var newObject = $(container).replaceWith(container.innerHTML);
+            
+            var finalSelection = window.getSelection();
+            var finalRange = selection.getRangeAt(0).cloneRange();
+            
+            finalRange.setEnd(finalRange.startContainer, finalRange.startOffset + 1);
+            
+            selection.removeAllRanges();
+            selection.addRange(finalRange);
+        }
+    }
+    
+    ZSSEditor.sendEnabledStyles();
 };
 
 ZSSEditor.setUnderline = function() {
-	document.execCommand('underline', false, null);
-	ZSSEditor.sendEnabledStyles();
+    document.execCommand('underline', false, null);
+    ZSSEditor.sendEnabledStyles();
 };
 
 ZSSEditor.setBlockquote = function() {
-	var formatTag = "blockquote";
-	var formatBlock = document.queryCommandValue('formatBlock');
-	 
-	if (formatBlock.length > 0 && formatBlock.toLowerCase() == formatTag) {
+    var formatTag = "blockquote";
+    var formatBlock = document.queryCommandValue('formatBlock');
+     
+    if (formatBlock.length > 0 && formatBlock.toLowerCase() == formatTag) {
         document.execCommand('formatBlock', false, this.defaultParagraphSeparatorTag());
-	} else {
+    } else {
         var blockquoteNode = this.closerParentNodeWithName(formatTag);
         
         if (blockquoteNode) {
@@ -471,55 +472,55 @@ ZSSEditor.setBlockquote = function() {
         } else {
             document.execCommand('formatBlock', false, '<' + formatTag + '>');
         }
-	}
+    }
 
-	 ZSSEditor.sendEnabledStyles();
+     ZSSEditor.sendEnabledStyles();
 };
 
 ZSSEditor.removeFormating = function() {
-	document.execCommand('removeFormat', false, null);
-	ZSSEditor.sendEnabledStyles();
+    document.execCommand('removeFormat', false, null);
+    ZSSEditor.sendEnabledStyles();
 };
 
 ZSSEditor.setHorizontalRule = function() {
-	document.execCommand('insertHorizontalRule', false, null);
-	ZSSEditor.sendEnabledStyles();
+    document.execCommand('insertHorizontalRule', false, null);
+    ZSSEditor.sendEnabledStyles();
 };
 
 ZSSEditor.setHeading = function(heading) {
-	var formatTag = heading;
-	var formatBlock = document.queryCommandValue('formatBlock');
-	
-	if (formatBlock.length > 0 && formatBlock.toLowerCase() == formatTag) {
-		document.execCommand('formatBlock', false, this.defaultParagraphSeparatorTag());
-	} else {
-		document.execCommand('formatBlock', false, '<' + formatTag + '>');
-	}
-	
-	ZSSEditor.sendEnabledStyles();
+    var formatTag = heading;
+    var formatBlock = document.queryCommandValue('formatBlock');
+    
+    if (formatBlock.length > 0 && formatBlock.toLowerCase() == formatTag) {
+        document.execCommand('formatBlock', false, this.defaultParagraphSeparatorTag());
+    } else {
+        document.execCommand('formatBlock', false, '<' + formatTag + '>');
+    }
+    
+    ZSSEditor.sendEnabledStyles();
 };
 
 ZSSEditor.setParagraph = function() {
-	var formatTag = "p";
-	var formatBlock = document.queryCommandValue('formatBlock');
-	
-	if (formatBlock.length > 0 && formatBlock.toLowerCase() == formatTag) {
-		document.execCommand('formatBlock', false, this.defaultParagraphSeparatorTag());
-	} else {
-		document.execCommand('formatBlock', false, '<' + formatTag + '>');
-	}
-	
-	ZSSEditor.sendEnabledStyles();
+    var formatTag = "p";
+    var formatBlock = document.queryCommandValue('formatBlock');
+    
+    if (formatBlock.length > 0 && formatBlock.toLowerCase() == formatTag) {
+        document.execCommand('formatBlock', false, this.defaultParagraphSeparatorTag());
+    } else {
+        document.execCommand('formatBlock', false, '<' + formatTag + '>');
+    }
+    
+    ZSSEditor.sendEnabledStyles();
 };
 
 ZSSEditor.undo = function() {
-	document.execCommand('undo', false, null);
-	ZSSEditor.sendEnabledStyles();
+    document.execCommand('undo', false, null);
+    ZSSEditor.sendEnabledStyles();
 };
 
 ZSSEditor.redo = function() {
-	document.execCommand('redo', false, null);
-	ZSSEditor.sendEnabledStyles();
+    document.execCommand('redo', false, null);
+    ZSSEditor.sendEnabledStyles();
 };
 
 ZSSEditor.setOrderedList = function() {
@@ -528,55 +529,55 @@ ZSSEditor.setOrderedList = function() {
 };
 
 ZSSEditor.setUnorderedList = function() {
-	document.execCommand('insertUnorderedList', false, null);
-	ZSSEditor.sendEnabledStyles();
+    document.execCommand('insertUnorderedList', false, null);
+    ZSSEditor.sendEnabledStyles();
 };
 
 ZSSEditor.setJustifyCenter = function() {
-	document.execCommand('justifyCenter', false, null);
-	ZSSEditor.sendEnabledStyles();
+    document.execCommand('justifyCenter', false, null);
+    ZSSEditor.sendEnabledStyles();
 };
 
 ZSSEditor.setJustifyFull = function() {
-	document.execCommand('justifyFull', false, null);
-	ZSSEditor.sendEnabledStyles();
+    document.execCommand('justifyFull', false, null);
+    ZSSEditor.sendEnabledStyles();
 };
 
 ZSSEditor.setJustifyLeft = function() {
-	document.execCommand('justifyLeft', false, null);
-	ZSSEditor.sendEnabledStyles();
+    document.execCommand('justifyLeft', false, null);
+    ZSSEditor.sendEnabledStyles();
 };
 
 ZSSEditor.setJustifyRight = function() {
-	document.execCommand('justifyRight', false, null);
-	ZSSEditor.sendEnabledStyles();
+    document.execCommand('justifyRight', false, null);
+    ZSSEditor.sendEnabledStyles();
 };
 
 ZSSEditor.setIndent = function() {
-	document.execCommand('indent', false, null);
-	ZSSEditor.sendEnabledStyles();
+    document.execCommand('indent', false, null);
+    ZSSEditor.sendEnabledStyles();
 };
 
 ZSSEditor.setOutdent = function() {
-	document.execCommand('outdent', false, null);
-	ZSSEditor.sendEnabledStyles();
+    document.execCommand('outdent', false, null);
+    ZSSEditor.sendEnabledStyles();
 };
 
 ZSSEditor.setTextColor = function(color) {
     ZSSEditor.restoreRange();
-	document.execCommand("styleWithCSS", null, true);
-	document.execCommand('foreColor', false, color);
-	document.execCommand("styleWithCSS", null, false);
-	ZSSEditor.sendEnabledStyles();
+    document.execCommand("styleWithCSS", null, true);
+    document.execCommand('foreColor', false, color);
+    document.execCommand("styleWithCSS", null, false);
+    ZSSEditor.sendEnabledStyles();
     // document.execCommand("removeFormat", false, "foreColor"); // Removes just foreColor
 };
 
 ZSSEditor.setBackgroundColor = function(color) {
-	ZSSEditor.restoreRange();
-	document.execCommand("styleWithCSS", null, true);
-	document.execCommand('hiliteColor', false, color);
-	document.execCommand("styleWithCSS", null, false);
-	ZSSEditor.sendEnabledStyles();
+    ZSSEditor.restoreRange();
+    document.execCommand("styleWithCSS", null, true);
+    document.execCommand('hiliteColor', false, color);
+    document.execCommand("styleWithCSS", null, false);
+    ZSSEditor.sendEnabledStyles();
 };
 
 // Needs addClass method
@@ -584,48 +585,48 @@ ZSSEditor.setBackgroundColor = function(color) {
 ZSSEditor.insertLink = function(url, title) {
 
     ZSSEditor.restoreRange();
-	
+    
     var sel = document.getSelection();
-	if (sel.rangeCount) {
+    if (sel.rangeCount) {
 
-		var el = document.createElement("a");
-		el.setAttribute("href", url);
-		
-		var range = sel.getRangeAt(0).cloneRange();
-		range.surroundContents(el);
-		el.innerHTML = title;
-		sel.removeAllRanges();
-		sel.addRange(range);
-	}
+        var el = document.createElement("a");
+        el.setAttribute("href", url);
+        
+        var range = sel.getRangeAt(0).cloneRange();
+        range.surroundContents(el);
+        el.innerHTML = title;
+        sel.removeAllRanges();
+        sel.addRange(range);
+    }
 
-	ZSSEditor.sendEnabledStyles();
+    ZSSEditor.sendEnabledStyles();
 };
 
 ZSSEditor.updateLink = function(url, title) {
-	
+    
     ZSSEditor.restoreRange();
-	
+    
     var currentLinkNode = ZSSEditor.lastTappedNode;
-	
+    
     if (currentLinkNode) {
-		currentLinkNode.setAttribute("href", url);
-		currentLinkNode.innerHTML = title;
+        currentLinkNode.setAttribute("href", url);
+        currentLinkNode.innerHTML = title;
     }
     ZSSEditor.sendEnabledStyles();
 };
 
 ZSSEditor.unlink = function() {
-	var savedSelection = rangy.saveSelection();
+    var savedSelection = rangy.saveSelection();
     
-	var currentLinkNode = ZSSEditor.closerParentNodeWithName('a');
+    var currentLinkNode = ZSSEditor.closerParentNodeWithName('a');
     
-	if (currentLinkNode) {
-		ZSSEditor.unwrapNode(currentLinkNode);
-	}
+    if (currentLinkNode) {
+        ZSSEditor.unwrapNode(currentLinkNode);
+    }
     
     rangy.restoreSelection(savedSelection);
-	
-	ZSSEditor.sendEnabledStyles();
+    
+    ZSSEditor.sendEnabledStyles();
 };
 
 ZSSEditor.unwrapNode = function(node) {
@@ -633,34 +634,34 @@ ZSSEditor.unwrapNode = function(node) {
 };
 
 ZSSEditor.quickLink = function() {
-	
-	var sel = document.getSelection();
-	var link_url = "";
-	var test = new String(sel);
-	var mailregexp = new RegExp("^(.+)(\@)(.+)$", "gi");
-	if (test.search(mailregexp) == -1) {
-		checkhttplink = new RegExp("^http\:\/\/", "gi");
-		if (test.search(checkhttplink) == -1) {
-			checkanchorlink = new RegExp("^\#", "gi");
-			if (test.search(checkanchorlink) == -1) {
-				link_url = "http://" + sel;
-			} else {
-				link_url = sel;
-			}
-		} else {
-			link_url = sel;
-		}
-	} else {
-		checkmaillink = new RegExp("^mailto\:", "gi");
-		if (test.search(checkmaillink) == -1) {
-			link_url = "mailto:" + sel;
-		} else {
-			link_url = sel;
-		}
-	}
+    
+    var sel = document.getSelection();
+    var link_url = "";
+    var test = new String(sel);
+    var mailregexp = new RegExp("^(.+)(\@)(.+)$", "gi");
+    if (test.search(mailregexp) == -1) {
+        checkhttplink = new RegExp("^http\:\/\/", "gi");
+        if (test.search(checkhttplink) == -1) {
+            checkanchorlink = new RegExp("^\#", "gi");
+            if (test.search(checkanchorlink) == -1) {
+                link_url = "http://" + sel;
+            } else {
+                link_url = sel;
+            }
+        } else {
+            link_url = sel;
+        }
+    } else {
+        checkmaillink = new RegExp("^mailto\:", "gi");
+        if (test.search(checkmaillink) == -1) {
+            link_url = "mailto:" + sel;
+        } else {
+            link_url = sel;
+        }
+    }
 
-	var html_code = '<a href="' + link_url + '">' + sel + '</a>';
-	ZSSEditor.insertHTML(html_code);
+    var html_code = '<a href="' + link_url + '">' + sel + '</a>';
+    ZSSEditor.insertHTML(html_code);
 };
 
 // MARK: - Images
@@ -955,7 +956,7 @@ ZSSEditor.applyImageSelectionFormatting = function( imageNode ) {
 
     var overlay = '<span class="edit-overlay"><span class="edit-content">Edit</span></span>';
     var html = '<span class="edit-container' + sizeClass + '">' + overlay + '</span>';
-   	node.insertAdjacentHTML( 'beforebegin', html );
+    node.insertAdjacentHTML( 'beforebegin', html );
     var selectionNode = node.previousSibling;
     selectionNode.appendChild( node );
 }
@@ -1399,18 +1400,18 @@ ZSSEditor.removeVisualFormatting = function( html ) {
 }
 
 ZSSEditor.insertHTML = function(html) {
-	document.execCommand('insertHTML', false, html);
-	this.sendEnabledStyles();
+    document.execCommand('insertHTML', false, html);
+    this.sendEnabledStyles();
 };
 
 ZSSEditor.isCommandEnabled = function(commandName) {
-	return document.queryCommandState(commandName);
+    return document.queryCommandState(commandName);
 };
 
 ZSSEditor.sendEnabledStyles = function(e) {
 
-	var items = [];
-	
+    var items = [];
+    
     var focusedField = this.getFocusedField();
     
     if (!focusedField.hasNoStyle) {
@@ -1531,8 +1532,8 @@ ZSSEditor.sendEnabledStyles = function(e) {
             }
         }
     }
-	
-	ZSSEditor.stylesCallback(items);
+    
+    ZSSEditor.stylesCallback(items);
 };
 
 // MARK: - Commands: High Level Editing
@@ -1746,8 +1747,7 @@ ZSSField.prototype.handleKeyDownEvent = function(e) {
         ZSSEditor.formatNewLine(e);
     } else if (ZSSEditor.closerParentNode() == this.wrappedDomNode()) {
         // IMPORTANT: without this code, we can have text written outside of paragraphs...
-        //
-        document.execCommand('formatBlock', false, 'div');
+        document.execCommand('formatBlock', false, 'p');
     }
 };
 
