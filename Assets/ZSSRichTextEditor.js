@@ -133,7 +133,7 @@ ZSSEditor.formatNewLine = function(e) {
             this.formatNewLineInsideBlockquote(e);
         } else if (!ZSSEditor.isCommandEnabled('insertOrderedList')
                    && !ZSSEditor.isCommandEnabled('insertUnorderedList')) {
-            document.execCommand('formatBlock', false, 'p');
+            document.execCommand('formatBlock', false, 'div');
         }
     } else {
         e.preventDefault();
@@ -1747,7 +1747,7 @@ ZSSField.prototype.handleKeyDownEvent = function(e) {
     } else if (ZSSEditor.closerParentNode() == this.wrappedDomNode()) {
         // IMPORTANT: without this code, we can have text written outside of paragraphs...
         //
-        document.execCommand('formatBlock', false, 'p');
+        document.execCommand('formatBlock', false, 'div');
     }
 };
 
